@@ -46,7 +46,7 @@ contract Mixer is IncrementalMerkleTree {
         returns (bool)
     {
         // need to check the root is valid or not
-        if (s_root != _root) revert Mixer_InvalidRoot();
+        if (isKnownRoot(_root)) revert Mixer_InvalidRoot();
 
         // need to check whether the nullifier has been used to prevent the double spending
         if (s_nullifierHashes[_nullifierHash]) revert Mixer_DoubleSpendingNotPossible();

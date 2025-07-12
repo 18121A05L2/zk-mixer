@@ -4,24 +4,27 @@ pragma solidity ^0.8.2;
 import {Poseidon2, Field} from "@poseidon/src/Poseidon2.sol";
 
 contract IncrementalMerkleTree {
-    uint8 public immutable i_depth = 8;
+    uint256 public constant ROOT_HISTORY_SIZE = 8;
+    uint8 public immutable i_depth;
     Poseidon2 immutable ic_poseidon2;
 
     uint256 public s_nextLeafIndex = 0;
     bytes32[] public s_tree;
-    bytes32 public s_root;
+    mapping(uint256 => bytes32) public s_roots;
+    uint256 public s_currentRootIndex;
 
     error IMT_ZeroDepth();
     error IMT_DepthMoreThanMAx();
     error IMT_DepthIndesBoundError();
     error IMT_TreeIsFull();
+    error IMT_InvalidRootHash();
 
     constructor(uint8 _depth, address _poseidon) {
         if (_depth == 0) revert IMT_ZeroDepth();
         if (_depth > 8) revert IMT_DepthMoreThanMAx();
         i_depth = _depth;
         ic_poseidon2 = Poseidon2(_poseidon);
-        s_root = zeroes(_depth);
+        s_roots[0] = zeroes(_depth);
 
         // we need to initialize the tree with zero or constant hash value subtrees
     }
@@ -65,10 +68,30 @@ contract IncrementalMerkleTree {
             currentHash = Field.toBytes32(ic_poseidon2.hash_2(Field.toField(left), Field.toField(right)));
             currentLeafIndex = currentLeafIndex / 2;
         }
-        // we nee to store the current root index , as this will be modified each time when we add a leaf node
-        s_root = currentHash;
+        // we need to store the current root index , as this will be modified each time when we add a leaf node
+        // s_root = currentHash;
+        uint256 currentRootIndex = (s_currentRootIndex + 1) % ROOT_HISTORY_SIZE;
+        s_roots[currentRootIndex] = currentHash;
+
         // we need to increment the current tree index at the end
         s_nextLeafIndex++;
+        s_currentRootIndex++;
         _insertedLeafIndex = currentLeafIndex;
+    }
+
+    function isKnownRoot(bytes32 _root) public view returns (bool) {
+        if (_root == bytes32(0)) revert IMT_InvalidRootHash();
+
+        uint256 i = s_currentRootIndex;
+        uint256 _currentRootIndex = s_currentRootIndex;
+
+        do {
+            if (_root == s_roots[i]) return true;
+            if (i == 0) {
+                i = ROOT_HISTORY_SIZE;
+            }
+            i--;
+        } while (i != _currentRootIndex);
+        return false;
     }
 }
