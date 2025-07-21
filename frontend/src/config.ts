@@ -5,7 +5,6 @@ import { metaMask, walletConnect } from "wagmi/connectors";
 const SEPOLIA_RPC_URL = process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL || "";
 const MAINNET_RPC_URL = process.env.NEXT_PUBLIC_MAINNET_RPC_URL || "";
 const PROJECT_ID = process.env.NEXT_PUBLIC_WC_PROJECT_ID || "";
-console.log({ PROJECT_ID });
 
 export const config = createConfig({
   chains: [mainnet, sepolia],
@@ -14,9 +13,5 @@ export const config = createConfig({
     [sepolia.id]: http(SEPOLIA_RPC_URL, { name: "sepolia" }),
   },
   ssr: true,
-  connectors: [
-    injected(),
-    metaMask(),
-    walletConnect({ projectId: PROJECT_ID }),
-  ],
+  connectors: [metaMask(), walletConnect({ projectId: PROJECT_ID })],
 });

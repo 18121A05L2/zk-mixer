@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "@rainbow-me/rainbowkit/styles.css";
 import Providers from "./Providers";
 
 const geistSans = Geist({
@@ -28,7 +29,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>{children}</Providers>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#94febf] via-green-300 py-12">
+          <Providers>{children}</Providers>
+        </div>
       </body>
     </html>
   );
