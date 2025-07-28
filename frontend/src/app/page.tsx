@@ -8,9 +8,9 @@ export default function Home() {
   const { disconnect } = useDisconnect();
   console.log({ isConnected });
   return (
-    <div className=" bg-white w-[70vw] h-[50vh] rounded-4xl flex items-center justify-center">
+    <div className=" bg-white w-[70vw] min-h-[50vh] rounded-4xl flex items-center justify-center py-10">
       {isConnected ? (
-        <div className=" flex flex-col gap-10 ">
+        <div className=" flex flex-col gap-10 items-center ">
           <div className=" bg-white p-5 rounded-2xl flex flex-col gap-6 ">
             <div className=" text-center text-neutral-600">{address}</div>
             <div

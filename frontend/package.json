@@ -13,12 +13,15 @@
     "@noir-lang/noir_js": "^1.0.0-beta.8",
     "@rainbow-me/rainbowkit": "^2.2.8",
     "@tanstack/react-query": "^5.83.0",
+    "axios": "^1.10.0",
+    "buffer": "^6.0.3",
     "ethers": "^6.15.0",
     "next": "15.4.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "viem": "^2.33.0",
-    "wagmi": "^2.16.0"
+    "wagmi": "^2.16.0",
+    "webpack": "^5.100.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

@@ -22,12 +22,14 @@ export async function generateCommitment(): Promise<any> {
   return result;
 }
 
-generateCommitment()
-  .then((result: any) => {
-    console.log(result);
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+(async () => {
+  await generateCommitment()
+    .then((result: any) => {
+      console.log(result);
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    });
+})();

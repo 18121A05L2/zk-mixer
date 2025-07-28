@@ -1,0 +1,240 @@
+export const abi = [
+  {
+    type: "constructor",
+    inputs: [
+      { name: "_verifier", type: "address", internalType: "address" },
+      { name: "_depth", type: "uint256", internalType: "uint256" },
+      { name: "_poseidon", type: "address", internalType: "address" },
+    ],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "ETH_DENOMINATION",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "MAX_POSEIDON_HASH_NUMBER",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "MAX_ROOT_HASH",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "constantHash",
+    inputs: [{ name: "_depth", type: "uint256", internalType: "uint256" }],
+    outputs: [{ name: "_hash", type: "bytes32", internalType: "bytes32" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "deposit",
+    inputs: [{ name: "_commitment", type: "bytes32", internalType: "bytes32" }],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
+    stateMutability: "payable",
+  },
+  {
+    type: "function",
+    name: "i_Poseidon",
+    inputs: [],
+    outputs: [
+      { name: "", type: "address", internalType: "contract Poseidon2" },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "i_depth",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "isKnownRoot",
+    inputs: [{ name: "_root", type: "bytes32", internalType: "bytes32" }],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "s_cachedSubTrees",
+    inputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    outputs: [{ name: "", type: "bytes32", internalType: "bytes32" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "s_commitments",
+    inputs: [{ name: "", type: "bytes32", internalType: "bytes32" }],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "s_nextLeafIndex",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "s_nextRootIndex",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "s_nullifierHashes",
+    inputs: [{ name: "", type: "bytes32", internalType: "bytes32" }],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "s_roots",
+    inputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    outputs: [{ name: "", type: "bytes32", internalType: "bytes32" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "withdraw",
+    inputs: [
+      { name: "_proof", type: "bytes", internalType: "bytes" },
+      { name: "_root", type: "bytes32", internalType: "bytes32" },
+      {
+        name: "_nullifierHash",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+      { name: "_recipient", type: "address", internalType: "address" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "event",
+    name: "Deposit",
+    inputs: [
+      {
+        name: "depositor",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "commitmennt",
+        type: "bytes32",
+        indexed: true,
+        internalType: "bytes32",
+      },
+      {
+        name: "insertedLeafIndex",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "Withdrawal",
+    inputs: [
+      {
+        name: "recipient",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "nullifierHash",
+        type: "bytes32",
+        indexed: false,
+        internalType: "bytes32",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "error",
+    name: "IMT_DepthOutOfBound",
+    inputs: [{ name: "_depth", type: "uint256", internalType: "uint256" }],
+  },
+  {
+    type: "error",
+    name: "IMT_DepthShouldNotBeZero",
+    inputs: [{ name: "_depth", type: "uint256", internalType: "uint256" }],
+  },
+  {
+    type: "error",
+    name: "IMT_InvalidTreeDepth",
+    inputs: [{ name: "_depth", type: "uint256", internalType: "uint256" }],
+  },
+  {
+    type: "error",
+    name: "IMT_MerkleTreeOverflow",
+    inputs: [
+      {
+        name: "_currentLeafIndex",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "ZkMixer_CommitmentAlreadyExists",
+    inputs: [{ name: "_commitment", type: "bytes32", internalType: "bytes32" }],
+  },
+  {
+    type: "error",
+    name: "ZkMixer_CommitmentIsGreaterThanMaxPoseidon",
+    inputs: [{ name: "_commitment", type: "bytes32", internalType: "bytes32" }],
+  },
+  {
+    type: "error",
+    name: "ZkMixer_InsufficientEthDeposit",
+    inputs: [
+      {
+        name: "_userDepositAmount",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "ZkMixer_NullifierAlreadyUsed",
+    inputs: [
+      {
+        name: "_nullifierHash",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "ZkMixer_ProofInvalid",
+    inputs: [{ name: "_proof", type: "bytes", internalType: "bytes" }],
+  },
+  {
+    type: "error",
+    name: "ZkMixer_RootInvalid",
+    inputs: [{ name: "_root", type: "bytes32", internalType: "bytes32" }],
+  },
+  { type: "error", name: "ZkMixer_TransferFundsFailed", inputs: [] },
+];
