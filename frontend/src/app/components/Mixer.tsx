@@ -13,11 +13,9 @@ import {
 import Link from "next/link";
 import { abi } from "../../contractData/abi";
 import { generateProof } from "../utils/generateProof";
-
-// import { randomBytes32 } from "../utils";
-// import { bytesToHex } from "viem";
-// import { Barretenberg } from "@aztec/bb.js";
-// import { Fr } from "@aztec/bb.js";
+import { uint8ArrayToHex } from "../utils";
+import { Barretenberg } from "@aztec/bb.js";
+import { Fr } from "@aztec/bb.js";
 
 export default function Mixer() {
   const [encodedProof, setEncodedProof] = useState<string>();
@@ -35,20 +33,12 @@ export default function Mixer() {
   });
 
   async function handleDeposit() {
-    // const nullifier = bytesToHex(randomBytes32());
-    // const secret = bytesToHex(randomBytes32());
-    // const barratenberg = await Barretenberg.new({ threads: 1 });
-    // const commitment = await barratenberg.poseidon2Hash([
-    //   Fr.fromString(nullifier),
-    //   Fr.fromString(secret),
-    // ]);
-    // console.log({ nullifier, secret, commitment });
+    const nullifier = Fr.random();
+    const secret = Fr.random();
+    const barratenberg = await Barretenberg.new({ threads: 1 });
+    const commitment = await barratenberg.poseidon2Hash([nullifier, secret]);
 
-    // TODO : need to move this to frontend
-    const response = await axios.get("http://localhost:3001/commitment");
-    const { nullifier, secret, commitment } = response.data;
-
-    // ProtocolName-tokenName-denomination-networkdId-concatenationOfNullifierAndSecret
+    // ProtocolName-tokenName-denomination-networkdId-Nullifier-Secret
     setNote(
       `ZkMixer-eth-${ETH_DENOMINATION}-${chainId}-${nullifier}-${secret}`
     );
@@ -58,7 +48,7 @@ export default function Mixer() {
         abi,
         address: ZK_MIXER_CONTRACT as `0x${string}`,
         functionName: "deposit",
-        args: [commitment],
+        args: [commitment.toString()],
         value: BigInt(ETH_DENOMINATION),
       });
     } catch (err) {
@@ -82,28 +72,44 @@ export default function Mixer() {
     }
     const nullifier = decodedProof[decodedProof.length - 2];
     const secret = decodedProof[decodedProof.length - 1];
-    const response = await axios.get(
-      `http://localhost:3001/commitment?nullifier=${nullifier}&secret=${secret}`
-    );
-    const commitment = response.data.commitment;
-    const nullifierHash = response.data.nullifierHash;
-    const { leaves } = (await axios.get(`http://localhost:3001/leaves`)) as {
-      leaves: string[];
-    };
-    const proof = generateProof({
+    const barratenberg = await Barretenberg.new({ threads: 1 });
+    const commitment = await barratenberg.poseidon2Hash([
+      Fr.fromString(nullifier),
+      Fr.fromString(secret),
+    ]);
+
+    const nullifierHash = await barratenberg.poseidon2Hash([
+      Fr.fromString(nullifier),
+    ]);
+
+    const leaves = (await axios
+      .get(`http://localhost:3001/mixer/leaves`)
+      .then((res) => res.data)) as string[];
+
+    const { proof, merkleRoot } = await generateProof({
       leaves,
       receipient: address,
-      commitment,
-      nullifierHash: nullifierHash,
+      commitment: commitment.toString(),
+      nullifierHash: nullifierHash.toString(),
       nullifier,
       secret,
     });
-    writeContract({
-      abi,
-      address: ZK_MIXER_CONTRACT as `0x${string}`,
-      functionName: "withdraw",
-      args: [proof, merkleroot, nullifierHash, address],
-    });
+
+    try {
+      writeContract({
+        abi,
+        address: ZK_MIXER_CONTRACT as `0x${string}`,
+        functionName: "withdraw",
+        args: [
+          `0x${uint8ArrayToHex(proof)}`,
+          merkleRoot,
+          nullifierHash.toString(),
+          address,
+        ],
+      });
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   return (
@@ -122,8 +128,18 @@ export default function Mixer() {
             onClick={handleWithdraw}
             className=" bg-green-500 rounded-[5px] text-center p-2 px-6 min-w-32 cursor-pointer"
           >
-            Withdraw
+            {isPending ? "Initiating withdrawl..." : "Withdraw"}
           </div>
+          {!encodedProof && (
+            <div className=" text-red-500 text-center">
+              Please enter the encoded proof
+            </div>
+          )}
+          {error?.cause?.details && (
+            <div className=" text-red-500 text-center">
+              {error?.cause?.details as string}
+            </div>
+          )}
           <div
             onClick={() => setIsWithdraw(false)}
             className=" bg-blue-500 rounded-[5px] text-center p-2 px-6 min-w-32 cursor-pointer "
@@ -180,7 +196,7 @@ export default function Mixer() {
       )}
       <div className=" mt-4 text-sm text-slate-500">
         {" "}
-        You are interacting with ::{" "}
+        Contract you are interacting with ::{" "}
         <Link
           className=" font-bold text-blue-400 underline"
           href={SEPOLIA_EXPLORER + ZK_MIXER_CONTRACT}

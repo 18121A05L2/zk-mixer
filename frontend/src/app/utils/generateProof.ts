@@ -17,12 +17,13 @@ export const generateProof = async ({
   nullifierHash: string;
   nullifier: string;
   secret: string;
-}): Promise<Uint8Array<ArrayBufferLike>> => {
+}): Promise<{ proof: Uint8Array<ArrayBufferLike>; merkleRoot: string }> => {
   const noir = new Noir(circuit as CompiledCircuit);
   const honk = new UltraHonkBackend(circuit.bytecode, { threads: 1 });
 
   const tree = await merkleTree(leaves);
   const merkleProof = tree.proof(tree.getIndex(commitment.toString()));
+
   const inputs = {
     // public inputs
     root: merkleProof.root,
@@ -37,5 +38,5 @@ export const generateProof = async ({
   const { witness } = await noir.execute(inputs);
   const { proof } = await honk.generateProof(witness);
 
-  return proof;
+  return { proof, merkleRoot: merkleProof.root };
 };

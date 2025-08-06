@@ -2,11 +2,13 @@
 import { useAccount, useDisconnect } from "wagmi";
 import ConnectWallet from "./components/ConnectWallet";
 import Mixer from "./components/Mixer";
+import { Buffer } from "buffer";
+
+globalThis.Buffer = Buffer;
 
 export default function Home() {
   const { isConnected, address } = useAccount();
   const { disconnect } = useDisconnect();
-  console.log({ isConnected });
   return (
     <div className=" bg-white w-[70vw] min-h-[50vh] rounded-4xl flex items-center justify-center py-10">
       {isConnected ? (
