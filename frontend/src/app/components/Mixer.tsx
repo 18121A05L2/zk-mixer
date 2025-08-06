@@ -22,8 +22,11 @@ export default function Mixer() {
   const [isWithdraw, setIsWithdraw] = useState(false);
   const [copied, setCopied] = useState(false);
   const [note, setNote] = useState("");
+  const [withdrawErrMsg, setWithdrawErrMsg] = useState("");
+  const [proofGenerationInfo, setProofGenerationInfo] = useState("");
   const { writeContract, isPending, error, data } = useWriteContract();
   const { chainId, address } = useAccount();
+  let barratenberg: Barretenberg;
   const {
     isLoading: isConfirmaing,
     isSuccess: isConfirmed,
@@ -35,7 +38,9 @@ export default function Mixer() {
   async function handleDeposit() {
     const nullifier = Fr.random();
     const secret = Fr.random();
-    const barratenberg = await Barretenberg.new({ threads: 1 });
+    if (!barratenberg) {
+      barratenberg = await Barretenberg.new({ threads: 1 });
+    }
     const commitment = await barratenberg.poseidon2Hash([nullifier, secret]);
 
     // ProtocolName-tokenName-denomination-networkdId-Nullifier-Secret
@@ -66,13 +71,18 @@ export default function Mixer() {
   }
 
   async function handleWithdraw() {
+    setProofGenerationInfo("generating proof...");
     const decodedProof = encodedProof?.split("-");
     if (!decodedProof || !address) {
+      setWithdrawErrMsg("Please enter the encoded proof");
       return;
     }
     const nullifier = decodedProof[decodedProof.length - 2];
     const secret = decodedProof[decodedProof.length - 1];
-    const barratenberg = await Barretenberg.new({ threads: 1 });
+    if (!barratenberg) {
+      barratenberg = await Barretenberg.new({ threads: 1 });
+    }
+
     const commitment = await barratenberg.poseidon2Hash([
       Fr.fromString(nullifier),
       Fr.fromString(secret),
@@ -93,7 +103,10 @@ export default function Mixer() {
       nullifierHash: nullifierHash.toString(),
       nullifier,
       secret,
+      setWithdrawErrMsg,
     });
+
+    setProofGenerationInfo("Proof is valid");
 
     try {
       writeContract({
@@ -130,14 +143,17 @@ export default function Mixer() {
           >
             {isPending ? "Initiating withdrawl..." : "Withdraw"}
           </div>
-          {!encodedProof && (
-            <div className=" text-red-500 text-center">
-              Please enter the encoded proof
-            </div>
+          {withdrawErrMsg && (
+            <div className=" text-red-500 text-center">{withdrawErrMsg}</div>
           )}
           {error?.cause?.details && (
             <div className=" text-red-500 text-center">
               {error?.cause?.details as string}
+            </div>
+          )}
+          {proofGenerationInfo && (
+            <div className=" text-green-500 text-center">
+              {proofGenerationInfo}
             </div>
           )}
           <div
