@@ -11,6 +11,7 @@ export const generateProof = async ({
   nullifier,
   secret,
   setWithdrawErrMsg,
+  setProofGenerationInfo,
 }: {
   leaves: string[];
   receipient: string;
@@ -19,6 +20,7 @@ export const generateProof = async ({
   nullifier: string;
   secret: string;
   setWithdrawErrMsg: React.Dispatch<React.SetStateAction<string>>;
+  setProofGenerationInfo: React.Dispatch<React.SetStateAction<string>>;
 }): Promise<{ proof: Uint8Array<ArrayBufferLike>; merkleRoot: string }> => {
   const noir = new Noir(circuit as CompiledCircuit);
   const honk = new UltraHonkBackend(circuit.bytecode, { threads: 1 });
@@ -43,7 +45,9 @@ export const generateProof = async ({
   // verifying proof
   const isVerified = await honk.verifyProof({ proof, publicInputs });
   console.log("isVerified", isVerified);
-  if (!isVerified) {
+  if (isVerified) {
+    setProofGenerationInfo("Proof is valid");
+  } else {
     setWithdrawErrMsg("Proof is not valid");
   }
 

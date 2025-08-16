@@ -16,6 +16,15 @@ import { generateProof } from "../utils/generateProof";
 import { uint8ArrayToHex } from "../utils";
 import { Barretenberg } from "@aztec/bb.js";
 import { Fr } from "@aztec/bb.js";
+import { simulateContract } from "wagmi/actions";
+import { config } from "@/config";
+import { BaseError } from "viem";
+
+interface CustomError extends BaseError {
+  cause?: {
+    details?: string;
+  };
+}
 
 export default function Mixer() {
   const [encodedProof, setEncodedProof] = useState<string>();
@@ -23,6 +32,7 @@ export default function Mixer() {
   const [copied, setCopied] = useState(false);
   const [note, setNote] = useState("");
   const [withdrawErrMsg, setWithdrawErrMsg] = useState("");
+  const [depositErrMsg, setDepositErrMsg] = useState("");
   const [proofGenerationInfo, setProofGenerationInfo] = useState("");
   const { writeContract, isPending, error, data } = useWriteContract();
   const { chainId, address } = useAccount();
@@ -48,14 +58,27 @@ export default function Mixer() {
       `ZkMixer-eth-${ETH_DENOMINATION}-${chainId}-${nullifier}-${secret}`
     );
 
+    const writeContractInfo = {
+      abi,
+      address: ZK_MIXER_CONTRACT as `0x${string}`,
+      functionName: "deposit",
+      args: [commitment.toString()],
+      value: BigInt(ETH_DENOMINATION),
+    };
+
     try {
-      writeContract({
-        abi,
-        address: ZK_MIXER_CONTRACT as `0x${string}`,
-        functionName: "deposit",
-        args: [commitment.toString()],
-        value: BigInt(ETH_DENOMINATION),
-      });
+      const simulationResponse = await simulateContract(
+        config,
+        writeContractInfo
+      );
+      console.log({ simulationResponse });
+    } catch (err) {
+      setDepositErrMsg("Failed to simulate transaction");
+      console.error(err);
+    }
+
+    try {
+      writeContract(writeContractInfo);
     } catch (err) {
       console.error(err);
     }
@@ -104,22 +127,33 @@ export default function Mixer() {
       nullifier,
       secret,
       setWithdrawErrMsg,
+      setProofGenerationInfo,
     });
 
-    setProofGenerationInfo("Proof is valid");
+    const writeContractInfo = {
+      abi,
+      address: ZK_MIXER_CONTRACT as `0x${string}`,
+      functionName: "withdraw",
+      args: [
+        `0x${uint8ArrayToHex(proof)}`,
+        merkleRoot,
+        nullifierHash.toString(),
+        address,
+      ],
+    };
 
     try {
-      writeContract({
-        abi,
-        address: ZK_MIXER_CONTRACT as `0x${string}`,
-        functionName: "withdraw",
-        args: [
-          `0x${uint8ArrayToHex(proof)}`,
-          merkleRoot,
-          nullifierHash.toString(),
-          address,
-        ],
-      });
+      const simulationResponse = await simulateContract(
+        config,
+        writeContractInfo
+      );
+      console.log({ simulationResponse });
+    } catch (err) {
+      console.error(err);
+    }
+
+    try {
+      writeContract(writeContractInfo);
     } catch (err) {
       console.error(err);
     }
@@ -146,9 +180,9 @@ export default function Mixer() {
           {withdrawErrMsg && (
             <div className=" text-red-500 text-center">{withdrawErrMsg}</div>
           )}
-          {error?.cause?.details && (
-            <div className=" text-red-500 text-center">
-              {error?.cause?.details as string}
+          {error && (error as CustomError).cause?.details && (
+            <div className="text-red-500 text-center">
+              {(error as CustomError).cause?.details}
             </div>
           )}
           {proofGenerationInfo && (
@@ -171,9 +205,12 @@ export default function Mixer() {
           >
             {isPending ? "Initiating..." : "Deposit 0.0001 ETH"}
           </div>
-          {error?.cause?.details && (
-            <div className=" text-red-500 text-center">
-              {error?.cause?.details as string}
+          {depositErrMsg && (
+            <div className=" text-red-500 text-center">{depositErrMsg}</div>
+          )}
+          {error && (error as CustomError).cause?.details && (
+            <div className="text-red-500 text-center">
+              {(error as CustomError).cause?.details}
             </div>
           )}
           {isConfirmaing && (
