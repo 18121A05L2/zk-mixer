@@ -1,0 +1,7 @@
+.rindexer
+    generated_csv/**/*.txt
+
+
+.env*
+
+

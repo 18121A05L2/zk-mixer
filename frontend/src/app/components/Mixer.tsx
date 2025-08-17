@@ -114,10 +114,46 @@ export default function Mixer() {
     const nullifierHash = await barratenberg.poseidon2Hash([
       Fr.fromString(nullifier),
     ]);
+    // backend
+    // const leaves = (await axios
+    //   .get(`http://localhost:3001/mixer/leaves`)
+    //   .then((res) => res.data)) as string[];
 
-    const leaves = (await axios
-      .get(`http://localhost:3001/mixer/leaves`)
-      .then((res) => res.data)) as string[];
+    // indexer
+    const leaves = await axios
+      .post(
+        "http://localhost:3001/graphql",
+        {
+          query: `
+          query AllDeposits($orderBy: [DepositsOrderBy!]) {
+            allDeposits(orderBy: $orderBy) {
+              nodes {
+                commitmennt
+              }
+            }
+          }
+        `,
+          variables: {
+            orderBy: "BLOCK_NUMBER_ASC",
+          },
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then((res) => res.data)
+      .then((graphqlRes) => {
+        const finalOutput = graphqlRes.data.allDeposits.nodes.reduce(
+          (acc: string[], node: { commitmennt: string }) => {
+            acc.push(node.commitmennt);
+            return acc;
+          },
+          []
+        );
+        return finalOutput;
+      });
 
     const { proof, merkleRoot } = await generateProof({
       leaves,

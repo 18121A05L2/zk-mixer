@@ -1,0 +1,31 @@
+name: indexer
+description: Indexer for ZKMixer aka tornadao cash
+project_type: no-code
+config: {}
+networks:
+  - name: sepolia
+    chain_id: 11155111
+    rpc: ${SEPOLIA_RPC_URL}
+storage:
+  postgres:
+    enabled: true
+  csv:
+    enabled: true
+    path: ./generated_csv
+native_transfers:
+  enabled: false
+contracts:
+  - name: ZkMixer
+    details:
+      - network: sepolia
+        address: 0xacf0c739b90b0bbf79f45ed77671ca9628e61660
+        start_block: "8852981"
+    abi: ./abis/ZKMixer.abi.json
+    include_events:
+      - Deposit
+      - Withdrawal
+  # - name: TwitterProxy
+  #   details:
+  #     - network: sepolia
+  #       address: 0x23d9603301a852f7b585e3edae89e2f8a87a9d9d
+  #   abi: ./abis/TwitterProxy.abi.json

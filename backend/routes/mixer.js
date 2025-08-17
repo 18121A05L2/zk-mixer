@@ -11,6 +11,7 @@ router.get("/leaves", async function (req, res, next) {
     "0x03f9e89ac3c5743507a37b33a7139eadb9b85815b815692d986ee57ee7557c14",
     "0x1a800b94519f17f22091ea1e84c6a23a1fba40808bbd3762b079ad0a4bac20ba",
     "0x29da70e2e2917fae8238f4ca50992e680032f84d295355acf86349870f25f043",
+    "0x1c1caecb62347cc5a32cecc21bf80ff51c04d57f658f6e2faf711dfa9233c61d"
   ]);
 });
 
