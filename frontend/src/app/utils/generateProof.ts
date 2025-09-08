@@ -41,7 +41,9 @@ export const generateProof = async ({
       is_even: merkleProof.pathIndices.map((el) => el % 2 === 0),
     };
     const { witness } = await noir.execute(inputs);
-    const { proof, publicInputs } = await honk.generateProof(witness);
+    const { proof, publicInputs } = await honk.generateProof(witness, {
+      keccak: true,
+    });
 
     // verifying proof
     const isVerified = await honk.verifyProof({ proof, publicInputs });
