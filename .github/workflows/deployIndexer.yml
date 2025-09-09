@@ -1,0 +1,67 @@
+name: Deploy Rindexer to EKS
+
+on:
+  push:
+    paths:
+      - "rindexer/**" # only redeploy if rindexer code changes
+      - ".github/workflows/deploy.yaml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    steps:
+      # Checkout code
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # Configure AWS credentials (needs OIDC role)
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-central-1
+
+      # Login to GHCR
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build & push Docker image
+      - name: Build and push Docker image
+        run: |
+          IMAGE=ghcr.io/joshstevens19/rindexer/rindexer:latest
+          docker build -t $IMAGE ./rindexer
+          docker push $IMAGE
+
+      # Setup kubectl & helm
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: "v1.30.0"
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "3.13.0"
+
+      # Update kubeconfig for EKS cluster
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --region eu-central-1 --name zkMixer
+
+      # Deploy with Helm (update image in values.yaml dynamically)
+      - name: Deploy Helm Chart
+        run: |
+          helm upgrade --install rindexer ./helm/rindexer \
+            --set image.repository=ghcr.io/${{ github.repository }}/rindexer \
+            --set image.tag=latest \
+            -f helm/rindexer/values.yaml
