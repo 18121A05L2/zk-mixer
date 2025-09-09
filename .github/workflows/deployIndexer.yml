@@ -3,8 +3,8 @@ name: Deploy Rindexer to EKS
 on:
   push:
     paths:
-      - "rindexer/**" # only redeploy if rindexer code changes 
-      - ".github/workflows/deploy.yaml"
+      - "indexer/**" # only redeploy if rindexer code changes
+      - ".github/workflows/deployIndexer.yaml"
 
 jobs:
   deploy:
@@ -62,6 +62,6 @@ jobs:
       - name: Deploy Helm Chart
         run: |
           helm upgrade --install rindexer ./helm/rindexer \
-            --set image.repository=ghcr.io/${{ github.repository }}/rindexer \
+            --set image.repository=ghcr.io/joshstevens19/rindexer/rindexer \
             --set image.tag=latest \
             -f helm/rindexer/values.yaml
