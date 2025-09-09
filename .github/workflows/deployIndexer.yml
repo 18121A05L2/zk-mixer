@@ -3,7 +3,7 @@ name: Deploy Rindexer to EKS
 on:
   push:
     paths:
-      - "rindexer/**" # only redeploy if rindexer code changes
+      - "rindexer/**" # only redeploy if rindexer code changes 
       - ".github/workflows/deploy.yaml"
 
 jobs:
