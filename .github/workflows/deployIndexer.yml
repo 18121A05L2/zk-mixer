@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - "indexer/**" # only redeploy if rindexer code changes
-      - ".github/workflows/deployIndexer.yaml"
+      - ".github/workflows/deployIndexer.yml"
 
 jobs:
   deploy:
