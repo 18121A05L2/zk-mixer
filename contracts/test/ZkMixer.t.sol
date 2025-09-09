@@ -18,6 +18,7 @@ contract MixerTests is Test {
     uint256 sepoliaForkId;
     string SEPOLIA_RPC_URL = vm.envString("SEPOLIA_RPC_URL");
     address SEPOLIA_ZKMIXER_ADDRESS = vm.envAddress("SEPOLIA_ZKMIXER_ADDRESS");
+    bool RUN_SEPOLIA_TESTS = vm.envBool("RUN_SEPOLIA_TESTS");
 
     function setUp() public {
         HonkVerifier verifier = new HonkVerifier();
@@ -117,7 +118,10 @@ contract MixerTests is Test {
         vm.stopPrank();
     }
 
-    function testRealExampleWithdrawNote7() public {
+    function testSepoliaWithdrawNote7() public {
+        if (!RUN_SEPOLIA_TESTS) {
+            vm.skip(true);
+        }
         vm.selectFork(sepoliaForkId);
         ZkMixer zkMixerSepolia = ZkMixer(SEPOLIA_ZKMIXER_ADDRESS);
         vm.startPrank(user);
@@ -147,7 +151,10 @@ contract MixerTests is Test {
         vm.stopPrank();
     }
 
-    function testRealExampleWithdrawNote8() public {
+    function testSepoliaWithdrawNote8() public {
+        if (!RUN_SEPOLIA_TESTS) {
+            vm.skip(true);
+        }
         vm.selectFork(sepoliaForkId);
         ZkMixer zkMixerSepolia = ZkMixer(SEPOLIA_ZKMIXER_ADDRESS);
         vm.startPrank(user);
