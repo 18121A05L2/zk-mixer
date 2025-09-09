@@ -64,7 +64,7 @@ export async function generateProof() {
   }
 }
 
-async () => {
+(async () => {
   await generateProof()
     .then((result: any) => {
       console.log(result);
@@ -74,4 +74,4 @@ async () => {
       console.error(error);
       process.exit(1);
     });
-};
+})();
