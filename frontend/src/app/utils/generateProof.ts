@@ -51,8 +51,9 @@ export const generateProof = async ({
     if (isVerified) {
       setProofGenerationInfo("Proof is valid");
     } else {
-      setWithdrawErrMsg("Proof is not valid");
+      // setWithdrawErrMsg("Proof is not valid");
     }
+    setProofGenerationInfo("generated proof successfully");
 
     return { proof, merkleRoot: merkleProof.root };
   } catch (error) {

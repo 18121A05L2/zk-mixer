@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useAccount,
   useWaitForTransactionReceipt,
@@ -34,7 +34,8 @@ export default function Mixer() {
   const [withdrawErrMsg, setWithdrawErrMsg] = useState("");
   const [depositErrMsg, setDepositErrMsg] = useState("");
   const [proofGenerationInfo, setProofGenerationInfo] = useState("");
-  const { writeContract, isPending, error, data } = useWriteContract();
+  const [commitment, setCommitment] = useState("");
+  const { writeContractAsync, isPending, error, data } = useWriteContract();
   const { chainId, address } = useAccount();
   let barratenberg: Barretenberg;
   const {
@@ -45,6 +46,19 @@ export default function Mixer() {
     hash: data,
   });
 
+  useEffect(() => {
+    if (isConfirmed && commitment) {
+      // push commitment to backend
+      axios
+        .post("http://localhost:3001/mixer/api/deposit", {
+          commitment,
+        })
+        .then((res) => console.log(res.data))
+        .catch((err) => console.error(err));
+      setCommitment("");
+    }
+  }, [commitment, isConfirmed]);
+
   async function handleDeposit() {
     const nullifier = Fr.random();
     const secret = Fr.random();
@@ -52,6 +66,7 @@ export default function Mixer() {
       barratenberg = await Barretenberg.new({ threads: 1 });
     }
     const commitment = await barratenberg.poseidon2Hash([nullifier, secret]);
+    setCommitment(commitment.toString());
 
     // ProtocolName-tokenName-denomination-networkdId-Nullifier-Secret
     setNote(
@@ -78,7 +93,7 @@ export default function Mixer() {
     }
 
     try {
-      writeContract(writeContractInfo);
+      await writeContractAsync(writeContractInfo);
     } catch (err) {
       console.error(err);
     }
@@ -114,11 +129,14 @@ export default function Mixer() {
     const nullifierHash = await barratenberg.poseidon2Hash([
       Fr.fromString(nullifier),
     ]);
+
     // backend
-    // const leaves = (await axios
-    //   .get(`http://localhost:3001/mixer/leaves`)
-    //   .then((res) => res.data)) as string[];
-    // TODO : undo this comment later
+    const leaves = (await axios
+      .get(`http://localhost:3001/mixer/api/withdraw`)
+      .then((res) =>
+        res.data.map((d: { commitment: string }) => d.commitment)
+      )) as string[];
+
     // indexer
     // const leaves = await axios
     //   .post(
@@ -154,17 +172,17 @@ export default function Mixer() {
     //     );
     //     return finalOutput;
     //   });
-    const leaves = [
-      "0x2a2f73526fcedf30b91bca5827679ce48d024753b2ca06217b99479c8f9911c1",
-      "0x22b32ba4fdaddc6c212496febb78575d054ace0985a130df298c953634d2a803",
-      "0x079cd038fb75ec74807b3efadefbd486c26c4707aff68b67261cbd795bb1fa3b",
-      "0x0acf7635d83ae55448dd29af15a69364320f30bd853a4d6b20a05304d706bb32",
-      "0x03f9e89ac3c5743507a37b33a7139eadb9b85815b815692d986ee57ee7557c14",
-      "0x1a800b94519f17f22091ea1e84c6a23a1fba40808bbd3762b079ad0a4bac20ba",
-      "0x29da70e2e2917fae8238f4ca50992e680032f84d295355acf86349870f25f043", // used
-      "0x1c1caecb62347cc5a32cecc21bf80ff51c04d57f658f6e2faf711dfa9233c61d", // used
-      "0x2c88a37b7eef3ee2ca048c1434eb9b160df0eed408c534264e145e8471992c4e", // used
-    ];
+    // const leaves = [
+    //   "0x2a2f73526fcedf30b91bca5827679ce48d024753b2ca06217b99479c8f9911c1",
+    //   "0x22b32ba4fdaddc6c212496febb78575d054ace0985a130df298c953634d2a803",
+    //   "0x079cd038fb75ec74807b3efadefbd486c26c4707aff68b67261cbd795bb1fa3b",
+    //   "0x0acf7635d83ae55448dd29af15a69364320f30bd853a4d6b20a05304d706bb32",
+    //   "0x03f9e89ac3c5743507a37b33a7139eadb9b85815b815692d986ee57ee7557c14",
+    //   "0x1a800b94519f17f22091ea1e84c6a23a1fba40808bbd3762b079ad0a4bac20ba",
+    //   "0x29da70e2e2917fae8238f4ca50992e680032f84d295355acf86349870f25f043", // used
+    //   "0x1c1caecb62347cc5a32cecc21bf80ff51c04d57f658f6e2faf711dfa9233c61d", // used
+    //   "0x2c88a37b7eef3ee2ca048c1434eb9b160df0eed408c534264e145e8471992c4e", // used
+    // ];
 
     const { proof, merkleRoot } = await generateProof({
       leaves,
@@ -220,8 +238,10 @@ export default function Mixer() {
     }
 
     try {
-      writeContract(writeContractInfo);
+      await writeContractAsync(writeContractInfo);
+      setProofGenerationInfo("withdrawn successfully");
     } catch (err) {
+      setProofGenerationInfo("Failed to withdraw");
       console.error(err);
     }
   }
