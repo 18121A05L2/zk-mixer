@@ -18,7 +18,7 @@ export default function ConnectWallet() {
       ))}
       <ConnectButton />
       <div className=" font-semibold text-neutral-600 text-center pt-5">
-        Plese connect your wallet
+        Please connect your wallet
       </div>
     </div>
   );
