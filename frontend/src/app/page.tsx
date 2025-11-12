@@ -16,7 +16,7 @@ export default function Home() {
           <div className=" bg-white p-5 rounded-2xl flex flex-col gap-6 ">
             <div className=" text-center text-neutral-600">{address}</div>
             <div
-              className=" text-center bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 px-6 rounded-xl shadow-lg hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-purple-300 transition duration-300 w-full"
+              className=" text-center bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 px-6 rounded-xl shadow-lg hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-purple-300 transition duration-300 w-full cursor-pointer"
               onClick={() => disconnect()}
             >
               Disconnect

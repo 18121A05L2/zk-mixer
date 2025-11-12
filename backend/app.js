@@ -4,9 +4,13 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var cors = require("cors");
+var mongoose = require("mongoose");
+var dotenv = require("dotenv");
+dotenv.config();
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
+var mixerRouter = require("./routes/mixer");
 
 var app = express();
 
@@ -22,9 +26,18 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+// connect to MongoDB
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("MongoDB connection error:", err));
+
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
-app.use("/mixer", require("./routes/mixer"));
+app.use("/mixer", mixerRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
