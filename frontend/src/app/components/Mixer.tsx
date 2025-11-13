@@ -6,6 +6,7 @@ import {
   useWriteContract,
 } from "wagmi";
 import {
+  BACKEND_API,
   ETH_DENOMINATION,
   SEPOLIA_EXPLORER,
   ZK_MIXER_CONTRACT,
@@ -50,7 +51,7 @@ export default function Mixer() {
     if (isConfirmed && commitment) {
       // push commitment to backend
       axios
-        .post("http://localhost:3001/mixer/api/deposit", {
+        .post(`${BACKEND_API}/mixer/api/deposit`, {
           commitment,
         })
         .then((res) => console.log(res.data))
@@ -132,7 +133,7 @@ export default function Mixer() {
 
     // backend
     const leaves = (await axios
-      .get(`http://localhost:3001/mixer/api/withdraw`)
+      .get(`${BACKEND_API}/mixer/api/withdraw`)
       .then((res) =>
         res.data.map((d: { commitment: string }) => d.commitment)
       )) as string[];
