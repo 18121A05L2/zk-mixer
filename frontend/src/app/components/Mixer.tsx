@@ -111,6 +111,7 @@ export default function Mixer() {
 
   async function handleWithdraw() {
     setProofGenerationInfo("generating proof...");
+    setWithdrawErrMsg("");
     const decodedProof = encodedProof?.split("-");
     if (!decodedProof || !address) {
       setWithdrawErrMsg("Please enter the encoded proof");
@@ -121,11 +122,19 @@ export default function Mixer() {
     if (!barratenberg) {
       barratenberg = await Barretenberg.new({ threads: 1 });
     }
+    let commitment;
 
-    const commitment = await barratenberg.poseidon2Hash([
-      Fr.fromString(nullifier),
-      Fr.fromString(secret),
-    ]);
+    try {
+      commitment = await barratenberg.poseidon2Hash([
+        Fr.fromString(nullifier),
+        Fr.fromString(secret),
+      ]);
+    } catch (err) {
+      setWithdrawErrMsg("Invalid proof");
+      setProofGenerationInfo("");
+      console.error(err);
+      return;
+    }
 
     const nullifierHash = await barratenberg.poseidon2Hash([
       Fr.fromString(nullifier),
