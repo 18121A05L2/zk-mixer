@@ -5,3 +5,4 @@ export const ZK_MIXER_CONTRACT =
   process.env.NEXT_PUBLIC_ZK_MIXER_CONTRACT || "";
 export const SEPOLIA_EXPLORER = "https://sepolia.etherscan.io/address/";
 export const ETH_DENOMINATION = 100000000000000; // 0.0001 ETH
+export const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API_URL;
